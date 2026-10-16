@@ -11,9 +11,9 @@ const { version = "LOCAL" } = Astro.props;
     role="img"
     aria-labelledby="plate-title plate-desc"
   >
-    <title id="plate-title">Stick-S3 presentation instrument</title>
+    <title id="plate-title">Stick-S3 macro instrument</title>
     <desc id="plate-desc"
-      >Technical illustration of the Stick-S3, with its screen, application
+      >Technical illustration of the Stick-S3, with its screen showing the active macro profile, application
       buttons, and USB-C connection.</desc
     >
     <defs>
@@ -105,15 +105,21 @@ const { version = "LOCAL" } = Astro.props;
         stroke-width="1.2"></rect>
       <path d="M150 172h94" stroke="#EFEBE0" stroke-opacity=".35"></path>
       <g fill="#EFEBE0" font-family="ui-monospace,monospace"
-        ><text x="151" y="164" font-size="7" letter-spacing="1"
-          >DECK CLICKER</text
-        ><text x="152" y="204" font-size="17" letter-spacing="2">READY</text
-        ><text x="152" y="223" font-size="6.5" letter-spacing="1"
-          >BLE / CONNECTED</text
-        ><text x="152" y="267" font-size="7">A → NEXT</text><text
-          x="152"
-          y="283"
-          font-size="7">B ← BACK</text
+        ><text x="151" y="164" font-size="7" letter-spacing=".6"
+          >P01/04 CLAUDE</text
+        ><text x="252" y="164" font-size="6" text-anchor="end" fill="#FF5B1A"
+          >SECURE</text
+        ><text x="155" y="187" font-size="5" letter-spacing=".5" opacity=".6">TAP</text><text x="189" y="187" font-size="5" letter-spacing=".5" opacity=".6">DBL</text><text x="222" y="187" font-size="5" letter-spacing=".5" opacity=".6">HOLD</text><text x="143" y="209" font-size="7" fill="#FF5B1A">A</text><text x="155" y="209" font-size="6" letter-spacing=".2">REVIEW</text><text x="189" y="209" font-size="6" letter-spacing=".2">TESTS</text><text x="222" y="209" font-size="6" letter-spacing=".2">COMMIT</text><path d="M143 220h108" stroke="#EFEBE0" stroke-opacity=".25"></path><text
+          x="143"
+          y="238"
+          font-size="7"
+          fill="#FF5B1A">B</text
+        ><text x="155" y="238" font-size="6" letter-spacing=".2">INTRPT</text><text x="189" y="238" font-size="6" letter-spacing=".2">MODE</text><text x="222" y="238" font-size="6" letter-spacing=".2">CLEAR</text><path d="M143 250h108" stroke="#EFEBE0" stroke-opacity=".25"></path><text
+          x="151"
+          y="290"
+          font-size="5.5"
+          letter-spacing=".5"
+          opacity=".6">A+B / PROFILES</text
         ></g
       >
       <circle cx="242" cy="134" r="2" fill="#EFEBE0"></circle><path
@@ -157,7 +163,7 @@ const { version = "LOCAL" } = Astro.props;
         y="137"
         font-size="20"
         letter-spacing="2">S3</text
-      ><text x="374" y="155">WIRELESS CONTROL</text><text x="374" y="221"
+      ><text x="374" y="155">WIRELESS MACROS</text><text x="374" y="221"
         >USB–C</text
       ><text x="374" y="237" opacity=".6">FLASH INTERFACE</text><text
         x="374"
@@ -168,7 +174,7 @@ const { version = "LOCAL" } = Astro.props;
       ><text x="374" y="381" opacity=".6">M5STACK</text><text
         x="196"
         y="426"
-        text-anchor="middle">TYPE / DECK CONTROLLER</text
+        text-anchor="middle">TYPE / MACRO CONTROLLER</text
       ></g
     >
     <path
@@ -204,14 +210,14 @@ const { version = "LOCAL" } = Astro.props;
       fill="#EFEBE0"
       font-family="ui-monospace,monospace"
       font-size="28"
-      letter-spacing="3">DECK—01</text
+      letter-spacing="3">MACRO—01</text
     ><text
       x="48"
       y="514"
       fill="#EFEBE0"
       font-family="ui-monospace,monospace"
       font-size="8"
-      letter-spacing="1.2">SYS.03 / PRESENT / CONTROL / REPEAT</text
+      letter-spacing="1.2">SYS.03 / SELECT / ENGAGE / REPEAT</text
     ><rect x="496" y="468" width="16" height="16" fill="#2438E8"></rect>
   </svg>
   <figcaption>

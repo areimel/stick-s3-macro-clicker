@@ -120,7 +120,7 @@ def package(project, output, version, commit=None, platformio_dir=None):
     if len(blobs["boot_app0.bin"]) != 0x2000:
         raise ValueError("Unexpected OTA initialization image size")
     manifest = {
-        "schemaVersion": 1, "name": "Stick-S3 Deck Clicker", "version": version,
+        "schemaVersion": 1, "name": "Stick-S3 Macro Clicker", "version": version,
         "commit": commit, "configSha256": sha256(config_bytes),
         "chipFamily": "ESP32-S3", "flashSize": FLASH_SIZE, "config": config,
         "parts": [{"path": name, "offset": offset, "size": len(blobs[name]),

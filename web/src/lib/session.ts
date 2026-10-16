@@ -142,12 +142,12 @@ export class FlashSession {
       try {
         await this.adapter.reset();
       } catch {
-        resetWarning = " Press the reset button to start the clicker.";
+        resetWarning = " Press the reset button to start the macro clicker.";
       }
       await this.cleanup();
       this.update(
         "complete",
-        `Firmware installed and flash checksums verified.${resetWarning} Check the display, then pair and test your presentation.`,
+        `Firmware installed and flash checksums verified.${resetWarning} Check the display, then pair and test a macro in a focused window.`,
         100,
       );
     } catch (error) {

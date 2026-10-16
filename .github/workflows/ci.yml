@@ -34,13 +34,17 @@ jobs:
           /tmp/sticks3-gesture-tests
           c++ -std=c++17 -Wall -Wextra -Werror -Itests/ble -Iinclude tests/test_ble.cpp src/BleKeyboard.cpp -o /tmp/sticks3-ble-tests
           /tmp/sticks3-ble-tests
+          c++ -std=c++11 -Wall -Wextra -Werror -Iinclude tests/test_controller.cpp -o /tmp/sticks3-controller-tests
+          /tmp/sticks3-controller-tests
+          c++ -std=c++11 -Wall -Wextra -Werror -Iinclude tests/test_player.cpp -o /tmp/sticks3-player-tests
+          /tmp/sticks3-player-tests
       - name: Package firmware
         run: |
           .venv/bin/python scripts/package_firmware.py --version 0.0.0-dev --output web/public/firmware
       - name: Test and build website
         working-directory: web
         env:
-          BASE_PATH: /stick-s3-deck-clicker/
+          BASE_PATH: /stick-s3-macro-clicker/
         run: |
           npm ci
           npm run check

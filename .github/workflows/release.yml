@@ -66,6 +66,10 @@ jobs:
           /tmp/sticks3-gesture-tests
           c++ -std=c++17 -Wall -Wextra -Werror -Itests/ble -Iinclude tests/test_ble.cpp src/BleKeyboard.cpp -o /tmp/sticks3-ble-tests
           /tmp/sticks3-ble-tests
+          c++ -std=c++11 -Wall -Wextra -Werror -Iinclude tests/test_controller.cpp -o /tmp/sticks3-controller-tests
+          /tmp/sticks3-controller-tests
+          c++ -std=c++11 -Wall -Wextra -Werror -Iinclude tests/test_player.cpp -o /tmp/sticks3-player-tests
+          /tmp/sticks3-player-tests
       - name: Package the validated firmware build
         env:
           RELEASE_VERSION: ${{ inputs.version }}
@@ -74,7 +78,7 @@ jobs:
       - name: Build website with the release bundle
         working-directory: web
         env:
-          BASE_PATH: /stick-s3-deck-clicker/
+          BASE_PATH: /stick-s3-macro-clicker/
         run: |
           npm ci
           npm run check
@@ -90,7 +94,7 @@ jobs:
           GH_REPO: ${{ github.repository }}
           RELEASE_VERSION: ${{ inputs.version }}
         run: |
-          gh release create "$RELEASE_VERSION" web/public/firmware/manifest.json web/public/firmware/*.bin --verify-tag --latest --title "Stick-S3 Clicker $RELEASE_VERSION" --generate-notes
+          gh release create "$RELEASE_VERSION" web/public/firmware/manifest.json web/public/firmware/*.bin --verify-tag --latest --title "Stick-S3 Macro Clicker $RELEASE_VERSION" --generate-notes
 
   deploy:
     needs: release

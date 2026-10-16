@@ -6,6 +6,7 @@ import {
   validateManifest,
   type FirmwareManifest,
 } from "../src/lib/firmware";
+import { actionDetail, actionLabel } from "../src/release";
 import {
   FlashSession,
   type FlashAdapter,
@@ -16,13 +17,31 @@ async function fixture(): Promise<FirmwareManifest> {
   const hash = await sha256(new Uint8Array([1, 2, 3, 4]));
   return {
     schemaVersion: 1,
-    name: "Clicker",
+    name: "Stick-S3 Macro Clicker",
     version: "test",
     commit: "abcdef",
     configSha256: hash,
     chipFamily: "ESP32-S3",
     flashSize: 8388608,
-    config: {},
+    config: {
+      bluetooth: { name: "Stick-S3 Macro" },
+      display: { brightness: 64 },
+      gestures: { debounce_ms: 25, double_click_ms: 250, long_press_ms: 650 },
+      typing: { keystroke_ms: 15 },
+      profiles: [
+        {
+          name: "CLAUDE",
+          buttons: {
+            main: {
+              single: { text: "Review the current diff.\n", label: "REVIEW" },
+              double: null,
+              long: "CMD+C",
+            },
+            secondary: { single: "ESC", double: "SHIFT+TAB", long: null },
+          },
+        },
+      ],
+    },
     parts: [0, 0x8000, 0xe000, 0x10000].map((offset, index) => ({
       path: `${index}.bin`,
       offset,
@@ -234,4 +253,19 @@ test("cancelled port chooser releases resources and permits another connection a
   await session.connect();
   assert.equal(session.phase, "error");
   assert.deepEqual(calls, ["close"]);
+});
+
+test("action labels and details describe combos, text, and sequences", () => {
+  assert.equal(actionLabel(null), "Unassigned");
+  assert.equal(actionLabel("cmd+c"), "CMD+C");
+  assert.equal(actionLabel({ text: "hi", label: "greet" }), "GREET");
+  assert.equal(actionLabel({ text: "Review the diff" }), "Review th~");
+  assert.equal(actionLabel({ sequence: [{ delay: 5 }] }), "MACRO");
+  assert.equal(actionDetail("cmd+c"), "CMD+C");
+  assert.equal(actionDetail({ text: "Run tests.\n" }), "Types “Run tests.” + ENTER");
+  assert.match(actionDetail({ text: "x".repeat(100) }), /…”$/);
+  assert.equal(
+    actionDetail({ sequence: ["CTRL+A", { text: "a" }, { delay: 100 }] }),
+    "Sequence: 3 steps",
+  );
 });

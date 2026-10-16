@@ -13,12 +13,12 @@ const release = readRelease();
       <p class="eyebrow">
         <span class="orange-square" aria-hidden="true"></span> FIRMWARE DEPLOYMENT
         / WEB SERIAL
-      </p><h1 id="page-title">Your slides.<br />Your signal.</h1>
+      </p><h1 id="page-title">Your macros.<br />Your signal.</h1>
     </div>
     <div class="intro-aside">
       <p>
-        A small instrument for a clear delivery.<br />Turn your Stick-S3 into a
-        Bluetooth<br class="desktop-break" /> presentation clicker. No app required.
+        A pocket instrument for the next command.<br />Turn your Stick-S3 into a
+        Bluetooth<br class="desktop-break" /> macro keyboard for shortcuts and pre-written prompts. No app required.
       </p><span class="small-tag">M5STACK STICK–S3 ONLY</span>
     </div>
   </section>
@@ -33,7 +33,7 @@ const release = readRelease();
         aria-hidden="true"
       >
         ⊕
-      </div><p class="micro-copy">ONE PURPOSE.<br />EVERY SLIDE.</p>
+      </div><p class="micro-copy">SIX SLOTS.<br />EVERY PROFILE.</p>
     </aside>
     <DevicePlate version={release?.version ?? "PREVIEW"} />
     <Installer release={release} />
@@ -62,6 +62,10 @@ const release = readRelease();
           <span>—</span>
         )
       }
+    </div>
+    <div>
+      <span class="rail-label">PROFILES</span><strong
+        >{release ? String(release.config.profiles.length).padStart(2, "0") : "—"}</strong>
     </div>
     <div>
       <span class="rail-label">FLASH TARGET</span><span
@@ -106,7 +110,7 @@ const release = readRelease();
     )
   }
   <div class="section-divider" id="field-guide">
-    <span>FIELD GUIDE / AFTER INSTALLATION</span><span aria-hidden="true"
+    <span>FIELD GUIDE / AFTER INSTALLATION // OPERATIVE BRIEFING</span><span aria-hidden="true"
       >↓</span>
   </div>
   <FieldGuide release={release} />
