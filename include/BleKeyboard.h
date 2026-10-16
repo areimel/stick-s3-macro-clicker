@@ -31,6 +31,10 @@ class MacroKeyboard : private NimBLEServerCallbacks,
   void releaseAll();
   bool connected() const;
   bool ready() const;
+  // Changes on connect, disconnect, (re)subscribe, bond clearing, or a failed
+  // encryption. A
+  // macro in progress must abort when it changes: a dropped stroke is never resent.
+  uint32_t linkGeneration() const { return generation_.load(); }
   void setBatteryLevel(uint8_t level);
   void clearBonds();
 

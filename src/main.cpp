@@ -20,6 +20,7 @@ bool charging = false;
 uint32_t lastBattery = 0;
 uint32_t lastScreen = 0;
 LinkState previousLink = LinkState::SEARCHING;
+uint32_t lastGeneration = 0;
 
 const char* const kButtonNames[] = {"A", "B"};
 const char* const kGestureNames[] = {"single", "double", "long"};
@@ -138,7 +139,9 @@ void refreshScreen(uint32_t now) {
   const uint32_t since = now - lastScreen;
   // Throttle progress-only redraws so drawing never paces the keystrokes.
   const bool progressOnly = next.screen == Screen::TRANSMIT && shown.screen == Screen::TRANSMIT;
-  if ((next != shown && (!progressOnly || since >= 100)) || since >= 1000) {
+  // Unlinked screens carry a blinking status dot, so refresh them faster.
+  const uint32_t idleRefresh = next.link == LinkState::SECURE ? 1000 : 250;
+  if ((next != shown && (!progressOnly || since >= 100)) || since >= idleRefresh) {
     ui.render(next);
     shown = next;
     lastScreen = now;
@@ -188,8 +191,12 @@ void loop() {
   M5.update();
   const uint32_t now = millis();
   const bool ready = keyboard.ready();
+  const uint32_t generation = keyboard.linkGeneration();
   // Input during disconnection is discarded and a macro never resumes later.
+  // Any link change (even a quick resubscribe) may have dropped a stroke.
   if (!ready) stopPlayback("link lost");
+  else if (generation != lastGeneration) stopPlayback("link changed");
+  lastGeneration = generation;
   handle(controller.update(M5.BtnA.isPressed(), M5.BtnB.isPressed(), now, ready, player.active()), now);
   Stroke stroke;
   if (player.next(now, keyboard.idle(), stroke) && !keyboard.send(stroke.mods, stroke.usage)) {
