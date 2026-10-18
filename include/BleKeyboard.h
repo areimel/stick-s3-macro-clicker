@@ -5,25 +5,48 @@
 #include <NimBLEDevice.h>
 #include <NimBLEHIDDevice.h>
 
-// Call begin/update/tap/setBatteryLevel/clearBonds from the Arduino loop task.
-// BLE callbacks only publish atomic connection state; they never touch the queue.
-class ClickerKeyboard : private NimBLEServerCallbacks,
-                        private NimBLECharacteristicCallbacks {
+// Single-stroke BLE HID keyboard transport.
+//
+// send() accepts one stroke (modifiers + usage) when ready() and idle(). On a
+// later update() it notifies the press report, holds it keystrokeMs, sends an
+// explicit all-zero release (retried on later updates until it succeeds), then
+// waits a further keystrokeMs gap before idle() is true again. Pacing between
+// strokes and delays is the caller's job (MacroPlayer); there is no queue and
+// no queue-age expiry. A stroke accepted before a reconnect/resubscribe is
+// never sent after it (generation check).
+//
+// Call begin/update/send/releaseAll/setBatteryLevel/clearBonds from the Arduino
+// loop task. BLE callbacks only publish atomic connection state.
+class MacroKeyboard : private NimBLEServerCallbacks,
+                      private NimBLECharacteristicCallbacks {
  public:
-  void begin(const char* name);
+  void begin(const char* name, uint16_t keystrokeMs);
   void update(uint32_t now);
-  bool tap(uint8_t usage);
+  // usage 0 with mods != 0 is a modifier-only chord. Rejects mods == 0 &&
+  // usage == 0, usage > 0xE7, not ready, or not idle.
+  bool send(uint8_t mods, uint8_t usage);
+  // True when no stroke is pending, held, or in its release gap.
+  bool idle() const { return phase_ == Phase::Idle; }
+  // Abort: drop an unsent stroke; release a held key as soon as possible.
+  void releaseAll();
   bool connected() const;
   bool ready() const;
+  // Changes on connect, disconnect, (re)subscribe, bond clearing, or a failed
+  // encryption. A
+  // macro in progress must abort when it changes: a dropped stroke is never resent.
+  uint32_t linkGeneration() const { return generation_.load(); }
   void setBatteryLevel(uint8_t level);
   void clearBonds();
 
  private:
+  enum class Phase : uint8_t { Idle, PressPending, Held, Gap };
+
   void onConnect(NimBLEServer*, NimBLEConnInfo&) override;
   void onDisconnect(NimBLEServer*, NimBLEConnInfo&, int reason) override;
   void onAuthenticationComplete(NimBLEConnInfo&) override;
   void onSubscribe(NimBLECharacteristic*, NimBLEConnInfo&, uint16_t) override;
-  bool send(uint8_t usage);
+  bool sendReport(uint8_t mods, uint8_t usage);
+  void syncGeneration();
   void resetPending();
 
   NimBLEServer* server_ = nullptr;
@@ -34,12 +57,11 @@ class ClickerKeyboard : private NimBLEServerCallbacks,
   std::atomic<bool> subscribed_{false};
   std::atomic<uint32_t> generation_{0};
   uint32_t seenGeneration_ = 0;
-  static constexpr uint8_t kQueueSize = 8;
-  struct Pending { uint8_t usage; uint32_t queuedAt; };
-  Pending queue_[kQueueSize]{};
-  uint8_t head_ = 0;
-  uint8_t count_ = 0;
-  bool keyDown_ = false;
+  Phase phase_ = Phase::Idle;
+  uint8_t mods_ = 0;
+  uint8_t usage_ = 0;
+  bool abortHold_ = false;
   bool baselinePending_ = true;
-  uint32_t sentAt_ = 0;
+  uint16_t keystrokeMs_ = 15;
+  uint32_t phaseAt_ = 0;
 };

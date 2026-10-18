@@ -1,17 +1,96 @@
+# Stick-S3 Macro Clicker configuration. Edit this file, then rebuild.
+# Invalid entries fail the build with the path of the problem.
+#
+# WARNING: this file is embedded in firmware and published with releases.
+# Never put passwords, tokens, or other secrets in text macros.
+#
+# Each profile has two buttons (main = A, secondary = B) and each button has
+# three gestures: single (tap), double, long (hold). An action is one of:
+#
+#   null                              unassigned
+#   "CMD+SHIFT+4"                     key combo: modifiers, then at most one key
+#   { keys: "CTRL+C", label: COPY }   same, with a display label (optional)
+#   { text: "hello", label: HI }      typed text (US ASCII; \n = ENTER, \t = TAB)
+#   { label: SHIP, sequence: [        ordered steps, any mix of:
+#       { text: "git push" },           text
+#       { keys: ENTER },                a combo (a bare "ENTER" string also works)
+#       { delay: 150 } ] }              a pause in milliseconds (1-10000)
+#
+# Modifiers: CTRL, SHIFT, ALT (OPT), CMD (GUI, WIN, META, SUPER).
+# Keys: A-Z 0-9 F1-F24 ENTER ESC BACKSPACE TAB SPACE DELETE INSERT HOME END
+#   PAGE_UP PAGE_DOWN UP DOWN LEFT RIGHT CAPS_LOCK PRINT_SCREEN MINUS EQUAL
+#   LBRACKET RBRACKET BACKSLASH SEMICOLON QUOTE GRAVE COMMA PERIOD SLASH
+# Labels are 1-10 printable ASCII characters, shown uppercase on the screen.
+# A+B together opens the on-device profile picker. Up to 9 profiles.
+
 bluetooth:
-  name: Stick-S3 Clicker
+  name: Stick-S3 Macro
 display:
   brightness: 64
 gestures:
   debounce_ms: 25
   double_click_ms: 250
   long_press_ms: 650
-buttons:
-  main:
-    single: RIGHT
-    double: null
-    long: null
-  secondary:
-    single: LEFT
-    double: null
-    long: ESC
+typing:
+  keystroke_ms: 15 # time each key is held, and the gap after it (5-100)
+
+profiles:
+  - name: CLAUDE
+    buttons:
+      main:
+        single:
+          label: REVIEW
+          sequence:
+            - text: "Review the current diff for bugs, regressions, and missing tests. Report findings by severity."
+            - keys: ENTER
+        double:
+          label: TESTS
+          sequence:
+            - text: "Run the test suite and fix any failures, then summarize what changed."
+            - keys: ENTER
+        long:
+          label: COMMIT
+          sequence:
+            - text: "Commit the changes with a clear, descriptive commit message."
+            - keys: ENTER
+      secondary:
+        single: { keys: ESC, label: INTERRUPT }
+        double: { keys: SHIFT+TAB, label: MODE }
+        long:
+          label: CLEAR
+          sequence:
+            - text: "/clear"
+            - keys: ENTER
+
+  - name: MAC EDIT
+    buttons:
+      main:
+        single: { keys: CMD+V, label: PASTE }
+        double: { keys: CMD+C, label: COPY }
+        long: { keys: CMD+X, label: CUT }
+      secondary:
+        single: { keys: CMD+Z, label: UNDO }
+        double: { keys: CMD+SHIFT+Z, label: REDO }
+        long: { keys: CMD+A, label: ALL }
+
+  - name: WIN EDIT
+    buttons:
+      main:
+        single: { keys: CTRL+V, label: PASTE }
+        double: { keys: CTRL+C, label: COPY }
+        long: { keys: CTRL+X, label: CUT }
+      secondary:
+        single: { keys: CTRL+Z, label: UNDO }
+        double: { keys: CTRL+Y, label: REDO }
+        long: { keys: CTRL+A, label: ALL }
+
+  - name: DECK
+    buttons:
+      main:
+        single: { keys: RIGHT, label: NEXT }
+        double: null
+        long: null
+      secondary:
+        single: { keys: LEFT, label: BACK }
+        double: null
+        long: { keys: ESC, label: EXIT }
