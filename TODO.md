@@ -16,5 +16,5 @@ Reworking the Stick-S3 Deck Clicker into the Stick-S3 Macro Clicker.
 - [ ] User: type the long CLAUDE prompts at `keystroke_ms: 15`; raise it if characters drop.
 - [ ] User: check display legibility at the configured brightness.
 - [ ] User: verify web flashing (install, normal reflash, clean install) on hardware.
-- [ ] User: authorize pushing, tagging, and publishing the first release and Pages site.
+- [x] Publish the first release (v1.0.0) and Pages site: https://areimel.github.io/stick-s3-macro-clicker/
 - [ ] User: measure battery runtime if it matters (no figure is claimed).

@@ -25,10 +25,9 @@ Its original behavior survives as the **DECK** profile.
 ## Install from your browser
 
 The Astro app in `web/` installs the latest official firmware over USB, with no
-PlatformIO installation needed by visitors. The public GitHub Pages release is
-published separately (expected at
-`https://areimel.github.io/stick-s3-macro-clicker/` once the first release is
-published); until then, use the local preview instructions below.
+PlatformIO installation needed by visitors. The live flasher is published on
+GitHub Pages at <https://areimel.github.io/stick-s3-macro-clicker/>, serving the
+latest stable release; the local preview instructions below work for development.
 
 1. Open the flasher in desktop Chrome or Edge and connect a **Stick-S3** with a
    USB **data** cable. Close serial monitors and other apps using its port.
