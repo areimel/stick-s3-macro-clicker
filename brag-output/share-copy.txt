@@ -1,0 +1,1 @@
+Two buttons, three gestures, nine profiles: I turned an M5Stack Stick-S3 into a pocket Bluetooth macro keyboard that types whole Claude Code prompts in one tap. Macros live in one YAML file, and you flash it straight from the browser: https://areimel.github.io/stick-s3-macro-clicker/

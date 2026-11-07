@@ -1,0 +1,418 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Stick-S3 Brag</title>
+<style>
+@font-face { font-family: "RM"; src: url("fonts/RobotoMono-Light.ttf"); font-weight: 300; }
+@font-face { font-family: "RM"; src: url("fonts/RobotoMono-Regular.ttf"); font-weight: 400; }
+@font-face { font-family: "RM"; src: url("fonts/RobotoMono-Medium.ttf"); font-weight: 500; }
+:root {
+  --bg: #141310; --panel: #1c1b17; --ink: #efebe0; --dim: #a39e90;
+  --line: #39372f; --accent: #ff5b1a; --blue: #2438e8;
+  --mono: "RM", "DejaVu Sans Mono", monospace;
+}
+html, body { margin: 0; background: var(--bg); }
+#stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: var(--bg);
+  font-family: var(--mono); color: var(--ink); font-weight: 400; }
+.dots { position: absolute; inset: 0;
+  background-image: radial-gradient(circle at 1.5px 1.5px, rgba(239,235,224,.075) 1.2px, transparent 1.6px);
+  background-size: 32px 32px; }
+.vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(0,0,0,.35)); }
+.scene { position: absolute; inset: 0; transform-origin: 50% 50%; display: none; }
+.abs { position: absolute; }
+canvas.scr { image-rendering: pixelated; display: block; position: absolute; }
+.cap { font-size: 72px; letter-spacing: -0.045em; line-height: 1.05; white-space: nowrap; }
+.acc { color: var(--accent); }
+.dim { color: var(--dim); }
+.eyebrow { font-size: 18px; letter-spacing: .2em; color: var(--dim); display: flex; gap: 14px; align-items: center; white-space: nowrap; }
+.sq { width: 10px; height: 10px; background: var(--accent); display: inline-block; }
+.small { font-size: 16px; letter-spacing: .14em; color: var(--dim); white-space: nowrap; }
+.tag { font-size: 15px; letter-spacing: .12em; padding: 6px 10px; border: 1px solid var(--line); color: var(--dim); white-space: nowrap; }
+.panel { border: 1px solid var(--line); background: var(--panel); }
+/* HUD */
+.hud-t, .hud-b { position: absolute; left: 40px; right: 40px; display: flex; justify-content: space-between;
+  font-size: 15px; letter-spacing: .16em; color: var(--dim); }
+.hud-t { top: 34px; height: 40px; border-bottom: 1px solid var(--line); align-items: center; }
+.hud-b { bottom: 26px; height: 40px; border-top: 1px solid var(--line); align-items: end; }
+.hud-t .brand { display: flex; gap: 12px; align-items: center; color: var(--ink); }
+/* terminal */
+#term { left: 1030px; top: 388px; width: 780px; height: 404px; }
+#term .hd { display: flex; justify-content: space-between; padding: 20px 28px; border-bottom: 1px solid var(--line); }
+#term .bd { padding: 28px 36px; font-size: 31px; line-height: 1.55; letter-spacing: -0.01em; }
+#term .ft { position: absolute; left: 36px; right: 36px; bottom: 22px; display: flex; justify-content: space-between; }
+.cursor { display: inline-block; width: .6em; height: 1.1em; background: var(--accent); vertical-align: -0.18em; margin-left: 2px; }
+/* gesture list */
+.gword { font-size: 64px; letter-spacing: -0.045em; }
+.gmark { height: 14px; margin-top: 14px; display: flex; gap: 10px; }
+.gmark i { display: block; width: 14px; height: 14px; border: 2px solid var(--line); box-sizing: border-box; }
+.gmark b { display: block; width: 180px; height: 14px; border: 2px solid var(--line); box-sizing: border-box; position: relative; }
+.gmark b span { position: absolute; left: 2px; top: 2px; bottom: 2px; background: var(--accent); }
+.colhi { position: absolute; border: 4px solid var(--accent); box-sizing: border-box; }
+/* keycaps */
+.kbd { position: absolute; width: 170px; height: 170px; border: 2px solid var(--ink); box-sizing: border-box;
+  display: flex; align-items: center; justify-content: center; font-size: 84px; }
+/* code */
+#code { left: 110px; top: 250px; width: 880px; height: 640px; }
+#code .hd { display: flex; justify-content: space-between; padding: 20px 28px; border-bottom: 1px solid var(--line); }
+#code pre { margin: 0; padding: 26px 32px; font-family: var(--mono); font-size: 27px; line-height: 1.72; white-space: pre; }
+.ln { color: #5d594e; display: inline-block; width: 52px; }
+/* install panel (styled after web/src/components/Installer.astro + theme.css) */
+#inst { left: 1220px; top: 250px; width: 600px; padding: 32px; box-sizing: border-box; background: transparent; }
+#inst .ph { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; }
+.status { display: flex; gap: 14px; align-items: center; padding: 20px 18px; background: var(--panel); font-size: 21px; line-height: 1.45; margin-top: 26px; min-height: 62px; }
+.dot { width: 9px; height: 9px; background: var(--accent); flex-shrink: 0; }
+.readout { display: flex; justify-content: space-between; font-size: 18px; padding: 18px 0; border-bottom: 1px solid var(--line); }
+.primary { display: flex; justify-content: space-between; align-items: center; padding: 24px; margin-top: 26px;
+  background: var(--accent); color: var(--bg); font-size: 24px; letter-spacing: .1em; transform-origin: 50% 50%; }
+.prog { height: 4px; background: var(--line); margin: 28px 0 0; position: relative; }
+.prog span { position: absolute; left: 0; top: 0; bottom: 0; background: var(--accent); }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="dots"></div>
+
+  <!-- S1 hook -->
+  <div class="scene" id="s1">
+    <div class="abs cap" style="left:110px;top:176px"><span id="s1a" style="display:inline-block">One tap.</span> <span id="s1b" class="acc" style="display:inline-block">A whole prompt.</span></div>
+    <div class="abs" id="dev" style="left:110px;top:388px;width:860px;height:404px">
+      <svg width="860" height="404" viewBox="0 0 860 404" style="overflow:visible;position:absolute;left:0;top:0">
+        <rect x="392" y="-7" width="76" height="12" rx="5" fill="#EFEBE0"/>
+        <rect x="1.3" y="1.3" width="857.4" height="401.4" rx="64" fill="#2438E8" stroke="#EFEBE0" stroke-width="2.6"/>
+        <rect x="12" y="12" width="836" height="380" rx="54" fill="none" stroke="#EFEBE0" stroke-opacity=".35"/>
+        <rect x="34" y="34" width="600" height="336" rx="9" fill="#141310" stroke="#EFEBE0" stroke-width="2"/>
+        <rect x="853" y="172" width="14" height="60" rx="6" fill="#141310" stroke="#EFEBE0" stroke-width="1.6"/>
+        <circle cx="748" cy="70" r="4.5" fill="#EFEBE0"/>
+        <path d="M748 300v52" stroke="#EFEBE0" stroke-width="4"/>
+        <circle id="ripple" cx="748" cy="202" r="60" fill="none" stroke="#FF5B1A" stroke-width="4" opacity="0"/>
+        <g id="btnA" style="transform-origin:748px 202px">
+          <rect x="690" y="116" width="116" height="172" rx="36" fill="#17160F" stroke="#EFEBE0" stroke-width="2.4"/>
+          <circle cx="748" cy="202" r="22" fill="none" stroke="#EFEBE0" stroke-width="2"/>
+          <path d="M748 189v26m-13-13h26" stroke="#EFEBE0" stroke-width="2"/>
+        </g>
+        <text x="748" y="104" text-anchor="middle" font-family="RM" font-size="15" letter-spacing="2" fill="#EFEBE0" opacity=".7">A</text>
+      </svg>
+      <canvas class="scr" id="c1" width="240" height="135" style="left:46px;top:40px;width:576px;height:324px"></canvas>
+    </div>
+    <div class="abs panel" id="term">
+      <div class="hd"><span class="small">~/project</span><span class="small">BLUETOOTH HID → FOCUSED WINDOW</span></div>
+      <div class="bd"><span class="acc">&gt; </span><span id="typed"></span><span class="cursor" id="cur"></span></div>
+      <div class="ft"><span class="small" id="tcount">0 / 95 STROKES</span><span class="small acc" id="tenter">ENTER ⏎</span></div>
+    </div>
+  </div>
+
+  <!-- S2 reveal -->
+  <div class="scene" id="s2">
+    <div class="abs" id="plate" style="left:150px;top:150px;width:780px;height:780px"></div>
+    <div class="abs eyebrow" id="s2e" style="left:1040px;top:340px"><span class="sq"></span>M5STACK STICK–S3 / BLUETOOTH HID</div>
+    <div class="abs" id="s2t" style="left:1036px;top:392px;font-size:104px;line-height:1.04;letter-spacing:-0.06em;white-space:nowrap">Stick-S3<br>Macro Clicker</div>
+    <div class="abs" id="s2s" style="left:1040px;top:640px;font-size:34px;line-height:1.45;color:var(--dim);letter-spacing:-0.02em">A pocket Bluetooth<br>macro keyboard.</div>
+    <div class="abs tag" id="s2g" style="left:1040px;top:780px">NO APP REQUIRED</div>
+  </div>
+
+  <!-- S3 gestures -->
+  <div class="scene" id="s3">
+    <div class="abs" id="g0" style="left:110px;top:270px"><div class="gword">Tap.</div><div class="gmark"><i></i></div></div>
+    <div class="abs" id="g1" style="left:110px;top:440px"><div class="gword">Double-tap.</div><div class="gmark"><i></i><i></i></div></div>
+    <div class="abs" id="g2" style="left:110px;top:610px"><div class="gword">Hold.</div><div class="gmark"><b><span id="holdbar"></span></b></div></div>
+    <div class="abs small" id="s3l" style="left:620px;top:160px">FIG.02 / HOME SCREEN / 240×135</div>
+    <div class="abs" id="s3frame" style="left:606px;top:186px;width:1226px;height:701px;border:1px solid var(--line)"></div>
+    <canvas class="scr" id="c3" width="240" height="135" style="left:619px;top:199px;width:1200px;height:675px"></canvas>
+    <div class="colhi" id="colhi"></div>
+    <div class="abs" id="s3eq" style="left:110px;top:928px;font-size:44px;letter-spacing:-0.035em;white-space:nowrap">
+      <span class="acc">2</span> buttons × <span class="acc">3</span> gestures = <span class="acc">6</span> macros <span class="dim">per profile</span></div>
+  </div>
+
+  <!-- S4 profiles -->
+  <div class="scene" id="s4">
+    <div class="abs cap" id="s4c" style="left:110px;top:128px">A+B switches profiles. <span class="acc">Up to 9.</span></div>
+    <div class="kbd" id="kA" style="left:110px;top:400px">A</div>
+    <div class="kbd" id="kB" style="left:320px;top:400px">B</div>
+    <div class="abs small" style="left:110px;top:592px">ENGAGE</div>
+    <div class="abs small" style="left:320px;top:592px">NEXT</div>
+    <div class="abs" id="s4s" style="left:110px;top:668px;font-size:26px;letter-spacing:.02em"></div>
+    <div class="abs" style="left:846px;top:286px;width:988px;height:568px;border:1px solid var(--line)"></div>
+    <canvas class="scr" id="c4" width="240" height="135" style="left:860px;top:300px;width:960px;height:540px"></canvas>
+  </div>
+
+  <!-- S5 yaml -->
+  <div class="scene" id="s5">
+    <div class="abs cap" id="s5c" style="left:110px;top:128px">Every macro lives in <span class="acc">one YAML file.</span></div>
+    <div class="abs panel" id="code">
+      <div class="hd"><span class="small" style="color:var(--ink)">config.yaml</span><span class="small">PROFILES[3]</span></div>
+      <pre id="codepre"></pre>
+    </div>
+    <div class="abs small" id="pipe" style="left:1050px;top:300px"></div>
+    <div class="abs" style="left:1036px;top:336px;width:796px;height:460px;border:1px solid var(--line)"></div>
+    <canvas class="scr" id="c5" width="240" height="135" style="left:1050px;top:350px;width:768px;height:432px"></canvas>
+  </div>
+
+  <!-- S6 outro -->
+  <div class="scene" id="s6">
+    <div class="abs eyebrow" id="s6e" style="left:140px;top:250px"><span class="sq"></span>FIRMWARE DEPLOYMENT / WEB SERIAL</div>
+    <div class="abs" id="s6h" style="left:132px;top:300px;font-size:150px;line-height:1.04;letter-spacing:-0.06em;white-space:nowrap">Your macros.<br>Your signal.</div>
+    <div class="abs" id="s6u" style="left:140px;top:690px;font-size:36px;letter-spacing:-0.02em" class="acc"><span class="acc">areimel.github.io/stick-s3-macro-clicker</span></div>
+    <div class="abs dim" id="s6m" style="left:140px;top:752px;font-size:24px">Install from your browser. Open-source firmware.</div>
+    <div class="abs" id="inst">
+      <div class="ph"><span class="small">01 / INSTALL FIRMWARE</span><span class="tag">USB–C</span></div>
+      <div style="font-size:34px;letter-spacing:-0.04em">Plug in. Flash. Present.</div>
+      <div class="status"><span class="dot"></span><span id="stat"></span></div>
+      <div class="readout"><span class="small">DEVICE</span><span style="font-size:19px">ESP32-S3 · 8 MB FLASH</span></div>
+      <div class="primary" id="ibtn"><span>INSTALL FIRMWARE</span><span style="font-size:28px">↗</span></div>
+      <div class="prog"><span id="iprog"></span></div>
+    </div>
+    <svg id="ptr" class="abs" width="40" height="52" viewBox="0 0 40 52" style="left:0;top:0">
+      <path d="M2 2 L2 40 L12 31 L19 48 L26 45 L19 28 L33 28 Z" fill="#EFEBE0" stroke="#141310" stroke-width="2.5" stroke-linejoin="round"/>
+    </svg>
+  </div>
+
+  <div class="vignette"></div>
+  <div class="hud-t"><span class="brand"><span class="sq"></span>STICK–S3 / MACRO CLICKER</span><span id="hudr">NO. 0001 · FIG.01</span></div>
+  <div class="hud-b"><span>SYS.03 / SELECT / ENGAGE / REPEAT</span><span id="hudtc">00:00.0</span></div>
+</div>
+<script src="fontdata.js"></script>
+<script src="screen.js"></script>
+<script src="plate.js"></script>
+<script>
+const $ = (id) => document.getElementById(id);
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const ramp = (t, a, b) => clamp((t - a) / (b - a));
+const eo = (x) => 1 - Math.pow(1 - x, 3);
+const eio = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+const P = Screen.PROFILES;
+$("plate").innerHTML = PLATE_SVG.replace("<svg", '<svg width="780" height="780"');
+
+// Rise-in for an element; returns eased progress.
+function rise(el, t, start, dur = 0.45, dy = 28) {
+  const e = eo(ramp(t, start, start + dur));
+  el.style.opacity = e;
+  el.style.transform = `translateY(${(1 - e) * dy}px)`;
+  return e;
+}
+const SCENES = [
+  ["s1", 0, 4], ["s2", 4, 7], ["s3", 7, 11], ["s4", 11, 15], ["s5", 15, 18], ["s6", 18, 22],
+];
+function sceneVis(t, a, b, last) {
+  const out = last ? 1 : 1 - eio(ramp(t, b - 0.25, b));
+  return out;
+}
+function model(extra) {
+  return Object.assign({ screen: "HOME", link: "SECURE", battery: 87, profiles: P, profileIndex: 0, highlighted: 0, ms: 0 }, extra);
+}
+
+const REVIEW = "Review the current diff for bugs, regressions, and missing tests. Report findings by severity.";
+const STROKES = REVIEW.length + 1; // + ENTER
+const KEY = 0.03;                   // 2 x keystroke_ms (15 ms)
+const T_PRESS = 0.5, T_TYPE = 0.55;
+
+function s1(t) {
+  rise($("s1a"), t, 0.08, 0.4);
+  rise($("s1b"), t, 0.5, 0.4);
+  const d = eo(ramp(t, 0, 0.5));
+  $("dev").style.opacity = d; $("dev").style.transform = `translateX(${(1 - d) * -120}px)`;
+  const tm = eo(ramp(t, 0.12, 0.6));
+  $("term").style.opacity = tm; $("term").style.transform = `translateX(${(1 - tm) * 80}px)`;
+  // button press
+  const pr = ramp(t, T_PRESS - 0.04, T_PRESS + 0.16);
+  const squash = pr > 0 && pr < 1 ? 1 - 0.07 * Math.sin(pr * Math.PI) : 1;
+  $("btnA").style.transform = `scale(${squash})`;
+  const rp = ramp(t, T_PRESS, T_PRESS + 0.6);
+  $("ripple").setAttribute("r", 60 + 90 * eo(rp));
+  $("ripple").setAttribute("opacity", rp > 0 && rp < 1 ? (1 - rp) * 0.9 : 0);
+  const sent = clamp(Math.floor((t - T_TYPE) / KEY) + 1, 0, STROKES);
+  let m;
+  if (t < T_TYPE) m = model({ ms: t * 1000 });
+  else if (t < T_TYPE + STROKES * KEY + 0.08) m = model({ screen: "TRANSMIT", macroLabel: "REVIEW", sent, total: STROKES, ms: t * 1000 });
+  else m = model({ ms: t * 1000 });
+  Screen.render($("c1"), m);
+  const chars = Math.min(sent, REVIEW.length);
+  $("typed").textContent = REVIEW.slice(0, chars);
+  const done = sent >= STROKES;
+  $("cur").style.opacity = done ? (Math.floor(t * 4) % 2 ? 0 : 1) : 1;
+  $("tcount").textContent = `${String(sent).padStart(2, "0")} / ${STROKES} STROKES · 15 MS KEYS`;
+  $("tenter").style.opacity = done ? 1 : 0;
+}
+
+function s2(t) {
+  const w = eio(ramp(t, 4.0, 4.75));
+  const pl = $("plate");
+  pl.style.clipPath = `inset(0 0 ${(1 - w) * 100}% 0)`;
+  pl.style.transform = `scale(${1.04 - 0.04 * eo(ramp(t, 4, 5))})`;
+  rise($("s2e"), t, 4.2);
+  rise($("s2t"), t, 4.3, 0.5, 36);
+  rise($("s2s"), t, 4.6);
+  rise($("s2g"), t, 4.9);
+}
+
+const COL = [[7.5, 8.5], [8.5, 9.5], [9.5, 10.8]];
+function s3(t) {
+  const sc = eo(ramp(t, 7.0, 7.45));
+  ["c3", "s3frame"].forEach((id) => { $(id).style.opacity = sc; $(id).style.transform = `scale(${0.97 + 0.03 * sc})`; });
+  rise($("s3l"), t, 7.1);
+  Screen.render($("c3"), model({ ms: t * 1000 }));
+  let active = -1;
+  COL.forEach(([a, b], g) => { if (t >= a && t < b) active = g; });
+  for (let g = 0; g < 3; g++) {
+    const el = $("g" + g);
+    rise(el, t, 7.1 + g * 0.1);
+    const on = g === active;
+    el.querySelector(".gword").style.color = on ? "var(--ink)" : "#6f6a5e";
+  }
+  // gesture marks pulse
+  const pulse = (tt) => { const p = ramp(t, tt, tt + 0.22); return p > 0 && p < 1; };
+  const tapI = $("g0").querySelectorAll("i"), dblI = $("g1").querySelectorAll("i");
+  const mark = (el, on) => { el.style.background = on ? "var(--accent)" : "transparent"; el.style.borderColor = on ? "var(--accent)" : "var(--line)"; };
+  mark(tapI[0], pulse(7.5));
+  mark(dblI[0], pulse(8.5) || pulse(8.75));
+  mark(dblI[1], pulse(8.75));
+  const hb = ramp(t, 9.5, 10.15);
+  $("holdbar").style.width = `${hb * 172}px`;
+  $("holdbar").style.background = hb >= 1 ? (Math.floor(t * 8) % 2 ? "var(--accent)" : "var(--ink)") : "var(--accent)";
+  // column highlight glides between columns
+  const S = 5, ox = 619, oy = 199;
+  let gpos = 0;
+  if (t >= 8.4) gpos = eio(ramp(t, 8.4, 8.6));
+  if (t >= 9.4) gpos = 1 + eio(ramp(t, 9.4, 9.6));
+  const ch = $("colhi");
+  ch.style.left = `${ox + (22 + 72 * gpos) * S}px`;
+  ch.style.top = `${oy + 37 * S}px`;
+  ch.style.width = `${72 * S}px`;
+  ch.style.height = `${80 * S}px`;
+  const hiOn = eo(ramp(t, 7.4, 7.6));
+  ch.style.opacity = hiOn;
+  const firing = pulse(7.5) || pulse(8.75) || (t >= 10.15 && t < 10.4);
+  ch.style.background = firing ? "rgba(255,91,26,.16)" : "rgba(255,91,26,.05)";
+  rise($("s3eq"), t, 8.6);
+}
+
+function s4(t) {
+  rise($("s4c"), t, 11.05);
+  const kin = eo(ramp(t, 11.1, 11.5));
+  ["kA", "kB"].forEach((id, i) => { $(id).style.opacity = eo(ramp(t, 11.1 + i * 0.06, 11.5 + i * 0.06)); });
+  const sc = eo(ramp(t, 11.0, 11.4));
+  $("c4").style.opacity = sc;
+  const presses = [[11.5, "AB"], [12.0, "B"], [12.5, "B"], [13.0, "B"], [13.5, "A"]];
+  let down = "";
+  presses.forEach(([tt, k]) => { if (t >= tt && t < tt + 0.18) down = k; });
+  const key = (id, on) => {
+    const el = $(id);
+    el.style.background = on ? "var(--accent)" : "transparent";
+    el.style.color = on ? "var(--bg)" : "var(--ink)";
+    el.style.borderColor = on ? "var(--accent)" : "var(--ink)";
+    el.style.transform = `scale(${on ? 0.94 : 1})`;
+  };
+  key("kA", down.includes("A")); key("kB", down.includes("B"));
+  let m, status = "";
+  if (t < 11.5) { m = model({ ms: t * 1000 }); status = ""; }
+  else if (t < 13.5) {
+    const hl = t < 12 ? 0 : t < 12.5 ? 1 : t < 13 ? 2 : 3;
+    m = model({ screen: "PICKER", highlighted: hl, ms: t * 1000 });
+    status = t < 12 ? '<span class="acc">A+B</span>  OPEN PICKER' : '<span class="acc">B</span>  NEXT PROFILE';
+  } else { m = model({ profileIndex: 3, ms: t * 1000 }); status = '<span class="acc">A</span>  ENGAGE · DECK'; }
+  Screen.render($("c4"), m);
+  $("s4s").innerHTML = status;
+  $("s4s").style.opacity = status ? 1 : 0;
+}
+
+// config.yaml DECK profile, verbatim, with token colors.
+const YAML = [
+  [["  - ", "d"], ["name", "k"], [": ", "d"], ["DECK", "a"]],
+  [["    ", "d"], ["buttons", "k"], [":", "d"]],
+  [["      ", "d"], ["main", "k"], [":", "d"]],
+  [["        ", "d"], ["single", "k"], [": { keys: ", "d"], ["RIGHT", "i"], [", label: ", "d"], ["NEXT", "a"], [" }", "d"]],
+  [["        ", "d"], ["double", "k"], [": ", "d"], ["null", "n"]],
+  [["        ", "d"], ["long", "k"], [": ", "d"], ["null", "n"]],
+  [["      ", "d"], ["secondary", "k"], [":", "d"]],
+  [["        ", "d"], ["single", "k"], [": { keys: ", "d"], ["LEFT", "i"], [", label: ", "d"], ["BACK", "a"], [" }", "d"]],
+  [["        ", "d"], ["double", "k"], [": ", "d"], ["null", "n"]],
+  [["        ", "d"], ["long", "k"], [": { keys: ", "d"], ["ESC", "i"], [", label: ", "d"], ["EXIT", "a"], [" }", "d"]],
+];
+const TOK = { d: "#8c877a", k: "#efebe0", a: "#ff5b1a", i: "#efebe0", n: "#5d594e" };
+const YTOTAL = YAML.reduce((n, l) => n + l.reduce((m, s) => m + s[0].length, 0), 0);
+const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+function s5(t) {
+  rise($("s5c"), t, 15.05);
+  const cp = eo(ramp(t, 15.0, 15.35));
+  $("code").style.opacity = cp; $("code").style.transform = `translateY(${(1 - cp) * 24}px)`;
+  let budget = Math.floor(ramp(t, 15.15, 16.2) * YTOTAL);
+  let html = "";
+  YAML.forEach((line, i) => {
+    let s = `<span class="ln">${String(87 + i)}</span>`;
+    let any = false;
+    for (const [txt, k] of line) {
+      if (budget <= 0) break;
+      const part = txt.slice(0, budget); budget -= part.length; any = true;
+      s += `<span style="color:${TOK[k]}">${esc(part)}</span>`;
+    }
+    if (any) html += s + "\n";
+  });
+  const typing = t < 16.2;
+  $("codepre").innerHTML = html.replace(/\n$/, typing ? '<span class="cursor"></span>\n' : "\n");
+  const sp = eo(ramp(t, 15.1, 15.45));
+  $("c5").style.opacity = sp;
+  const stages = [["BUILD", 16.2], ["FLASH", 16.35], ["BOOT", 16.5]];
+  $("pipe").innerHTML = stages.map(([n, at]) => `<span style="color:${t >= at ? "var(--accent)" : "#5d594e"}">${n}</span>`).join('<span style="color:#5d594e">  →  </span>');
+  let m;
+  if (t < 16.5) m = { screen: "IDLE" };
+  else if (t < 17.1) m = { screen: "BOOT", step: Math.min(5, Math.floor((t - 16.5) / 0.12)) };
+  else m = model({ profileIndex: 3, ms: t * 1000 });
+  if (m.screen === "IDLE") {
+    const c = $("c5").getContext("2d");
+    c.fillStyle = Screen.C.BG; c.fillRect(0, 0, 240, 135);
+    c.fillStyle = Screen.C.LINE;
+    [[2, 2, 1, 1], [237, 2, -1, 1], [2, 132, 1, -1], [237, 132, -1, -1]].forEach(([x, y, dx, dy]) => {
+      c.fillRect(dx > 0 ? x : x - 5, y, 6, 1); c.fillRect(x, dy > 0 ? y : y - 5, 1, 6);
+    });
+  } else Screen.render($("c5"), m);
+}
+
+function s6(t) {
+  rise($("s6e"), t, 18.05);
+  rise($("s6h"), t, 18.12, 0.55, 40);
+  rise($("s6u"), t, 18.5);
+  rise($("s6m"), t, 18.7);
+  const ip = eo(ramp(t, 18.2, 18.7));
+  $("inst").style.opacity = ip; $("inst").style.transform = `translateX(${(1 - ip) * 60}px)`;
+  // pointer travels to the button and clicks on the beat at 19.0
+  const r = $("ibtn").getBoundingClientRect(); const bx = r.left + r.width * 0.55, by = r.top + r.height * 0.5;
+  const mv = eio(ramp(t, 18.45, 18.95));
+  const px = 1760 + (bx - 1760) * mv, py = 980 + (by - 980) * mv;
+  const pout = eo(ramp(t, 19.6, 19.9));
+  $("ptr").style.opacity = ramp(t, 18.4, 18.55) * (1 - pout);
+  const press = t >= 19.0 && t < 19.14;
+  $("ptr").style.transform = `translate(${px}px, ${py}px) scale(${press ? 0.88 : 1})`;
+  const btn = $("ibtn");
+  btn.style.transform = `scale(${press ? 0.975 : 1})`;
+  btn.style.background = t >= 18.95 && t < 19.3 ? "#ff7c48" : "var(--accent)";
+  const pg = eio(ramp(t, 19.05, 20.4));
+  $("iprog").style.width = `${pg * 100}%`;
+  $("stat").innerHTML = t < 19.05 ? "Ready to install." :
+    t < 20.45 ? "Installing firmware and verifying flash checksums…" :
+    '<span class="acc">✓</span> Firmware installed and flash checksums verified.';
+}
+
+const FNS = [s1, s2, s3, s4, s5, s6];
+window.renderAt = function (t) {
+  SCENES.forEach(([id, a, b], i) => {
+    const el = $(id);
+    const on = t >= a && t < b + (i === SCENES.length - 1 ? 1 : 0);
+    el.style.display = on ? "block" : "none";
+    if (!on) return;
+    el.style.opacity = sceneVis(t, a, b, i === SCENES.length - 1);
+    el.style.transform = `scale(${1 + 0.018 * ramp(t, a, b)})`;
+    FNS[i](t);
+    $("hudr").textContent = `NO. 0001 · FIG.0${i + 1}`;
+  });
+  const s = Math.floor(t * 10) / 10;
+  $("hudtc").textContent = `00:${s.toFixed(1).padStart(4, "0")}`;
+};
+window.ready = (async () => {
+  await Promise.all(["300 20px RM", "400 20px RM", "500 20px RM"].map((f) => document.fonts.load(f)));
+  await document.fonts.ready;
+  return true;
+})();
+renderAt(0);
+</script>
+</body>
+</html>
